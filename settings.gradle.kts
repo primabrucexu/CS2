@@ -3,5 +3,4 @@ plugins {
 }
 rootProject.name = "cs2"
 include("gui")
-include("untitled")
 include("core")
