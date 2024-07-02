@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:cs2.db
+    url: jdbc:sqlite:${user.home}/cs2.db
   jpa:
     hibernate:
       ddl-auto: update
