@@ -6,4 +6,9 @@ subprojects {
         mavenLocal()
         maven("https://maven.aliyun.com/repository/public/")
     }
+
+    tasks.withType<JavaCompile> {
+        options.encoding = "UTF-8"
+    }
+
 }
