@@ -1,4 +1,4 @@
-package cn.pbx.entity;
+package cn.pbx.cs2.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

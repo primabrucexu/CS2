@@ -1,4 +1,4 @@
-package cn.pbx.entity;
+package cn.pbx.cs2.data.entity;
 
 import cn.pbx.enums.DetailType;
 import cn.pbx.enums.InventoryType;

@@ -1,6 +1,6 @@
-package cn.pbx.cs2.data;
+package cn.pbx.cs2.data.repository;
 
-import cn.pbx.entity.Inventory;
+import cn.pbx.cs2.data.entity.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
