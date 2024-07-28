@@ -1,60 +1,48 @@
 package cn.pbx.cs2.uuyoupin;
 
+import cn.hutool.json.JSONObject;
 import cn.pbx.cs2.exception.LoginFailedException;
-import cn.pbx.cs2.util.CacheUtil;
-import cn.pbx.cs2.util.ConfigUtil;
+import cn.pbx.cs2.util.Http;
+import cn.pbx.cs2.util.Input;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * @author BruceXu
  */
 @Slf4j
 public class UUClient {
+    private final UserInfo userInfo;
 
-    private final Token token;
-
-    public UUClient(Token token) {
-        this.token = token;
+    public UUClient(UserInfo userInfo) {
+        this.userInfo = userInfo;
         checkStatus();
     }
 
-    public static UUClient create() {
-        Token token = CacheUtil.getUUToken();
-        if (token.getToken() == null) {
-            log.warn("Cannot get uu token from file, will start login procedure");
-            return login();
+    public static UserInfo login(String phone) {
+        UserInfo userInfo = new UserInfo(phone);
+        JSONObject response = Http.request(API.GET_SMS_CODE, userInfo.getHeaders(), userInfo.requestSmsCodeBody());
+        JSONObject signInResp;
+        if (response.getInt("Code") != 5050) {
+            log.info("请求短信验证码结果: {}", response.get("Msg"));
+            String code = Input.get("请输入验证码");
+            signInResp = Http.request(API.SMS_SIGN_IN, userInfo.getHeaders(), userInfo.loginBody(code));
+            log.info("signInResp: {}", signInResp);
+            String userToken = signInResp.getByPath("Data.Token", String.class);
+            userInfo.setToken(userToken);
+            return userInfo;
         }
+        return userInfo;
+    }
+
+    void checkStatus() throws LoginFailedException {
         try {
-            return new UUClient(token);
-        } catch (LoginFailedException e) {
-            log.warn("Cannot login by token, will start login procedure");
-            return login();
+            JSONObject jsonObject = Http.request(API.GET_USER_INFO, userInfo.getHeaders(), null);
+            String userId = jsonObject.getByPath("Data.UserId", String.class);
+            String nickname = jsonObject.getByPath("Data.NickName", String.class);
+            log.info("user => phone: {} id: {}, nickname: {}", userInfo.getPhone(), userId, nickname);
+        } catch (Exception e) {
+            throw new LoginFailedException(e);
         }
+
     }
-
-    private static UUClient login() {
-        Token token = new Token(ConfigUtil.getPhone());
-
-        return new UUClient(token);
-    }
-
-    private static void smsLogin(Token token) {
-        WebClient client = WebClient.builder()
-                .baseUrl("https://api.youpin898.com/api")
-                .defaultHeader("authorization", "Bearer " + token)
-                .defaultHeader("content-type", "application/json; charset=utf-8")
-                .defaultHeader("user-agent", "okhttp/3.14.9")
-                .defaultHeader("app-version", "5.18.1")
-                .defaultHeader("apptype", "4")
-                .defaultHeader("package-type", "uuyp")
-                .defaultHeader("devicetoken", token.getDeviceToken())
-                .defaultHeader("deviceid", token.getDeviceToken())
-                .defaultHeader("platform", "android")
-                .defaultHeader("package-type", "uuyp")
-                .defaultHeader("accept-encoding", "gzip")
-                .build();
-    }
-
-    private void checkStatus() throws LoginFailedException {}
 }

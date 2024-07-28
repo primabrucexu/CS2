@@ -37,7 +37,7 @@ public class JpaConfig {
     @Bean
     public JpaProperties jpaProperties(JpaProperties properties) {
         Map<String, String> map = new HashMap<>();
-        map.put("hibernate.hbm2ddl.auto", EXIST_DATABASE ? "create" : "update");
+        map.put("hibernate.hbm2ddl.auto", EXIST_DATABASE ? "update" : "create");
         map.put("hibernate.dialect", "org.hibernate.community.dialect.SQLiteDialect");
         properties.setGenerateDdl(true);
         properties.setShowSql(true);
